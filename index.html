@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Puzzle Challenge 🧮</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            text-align: center;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .question-math {
+            font-size: 2em;
+            text-align: center;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 15px 0;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.5em;
+            text-align: center;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-submit {
+            background: #4ade80;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+
+        .btn-restart {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-restart:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .feedback.wrong {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .history {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 10px;
+        }
+
+        .history-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .history-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .history-item {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            border: 2px solid #667eea;
+        }
+
+        .voice-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-toggle:hover {
+            transform: scale(1.1);
+            background: #667eea;
+        }
+
+        .voice-toggle.muted {
+            opacity: 0.5;
+        }
+
+        .exit-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .exit-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .emoji {
+            font-size: 3em;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .game-over {
+            display: none;
+            text-align: center;
+        }
+
+        .game-over h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #ff6b6b;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .question-text {
+                font-size: 1.1em;
+            }
+
+            .question-math {
+                font-size: 1.5em;
+            }
+
+            .answer-input {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="position: relative;">
+        <button class="voice-toggle" id="voiceToggle" onclick="toggleVoice()" title="Toggle Voice">
+            🔊
+        </button>
+
+        <h1>🧮 Math Puzzle Challenge</h1>
+        <p class="subtitle" id="subtitle">Solve 10 questions as fast as you can!</p>
+
+        <div id="menuArea">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="color: #667eea; margin-bottom: 15px;">What do you want to practice today?</h2>
+                <p style="color: #666; font-size: 0.9em;">Choose a topic to start!</p>
+            </div>
+
+            <button class="btn" style="background: #ff6b6b; color: white; margin-bottom: 12px;" onclick="startGame('addition')">
+                ➕ Addition
+            </button>
+
+            <button class="btn" style="background: #4ade80; color: white; margin-bottom: 12px;" onclick="startGame('subtraction')">
+                ➖ Subtraction
+            </button>
+
+            <button class="btn" style="background: #fbbf24; color: white; margin-bottom: 12px;" onclick="startGame('multiplication')">
+                ✖️ Multiplication
+            </button>
+
+            <button class="btn" style="background: #8b5cf6; color: white; margin-bottom: 12px;" onclick="startGame('division')">
+                ➗ Division
+            </button>
+
+            <button class="btn" style="background: #3b82f6; color: white; margin-bottom: 12px;" onclick="startGame('shapes')">
+                🔷 Square & Rectangle
+            </button>
+
+            <button class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;" onclick="startGame('all')">
+                🌟 All Topics (Mixed)
+            </button>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat">
+                <div class="stat-label">Question</div>
+                <div class="stat-value" id="questionNum">1/10</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Streak 🔥</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; display: none;" id="exitBtnContainer">
+            <button class="exit-btn" onclick="exitToMenu()">
+                ⬅️ Change Topic
+            </button>
+        </div>
+
+        <div id="gameArea" style="display: none;">
+            <div class="question-card">
+                <div class="question-text" id="questionText"></div>
+                <div class="question-math" id="questionMath"></div>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <input
+                type="number"
+                class="answer-input"
+                id="answerInput"
+                placeholder="Your answer"
+                autocomplete="off"
+            >
+
+            <button class="btn btn-submit" id="submitBtn" onclick="checkAnswer()">
+                Submit Answer ✓
+            </button>
+        </div>
+
+        <div class="game-over" id="gameOver">
+            <div class="emoji">🎉</div>
+            <h2>Game Complete!</h2>
+            <div class="final-score" id="finalScore">0/10</div>
+            <p style="margin-bottom: 20px;">Great job! Keep practicing!</p>
+            <button class="btn btn-restart" onclick="restartGame()">
+                Play Again 🔄
+            </button>
+        </div>
+
+        <div class="history">
+            <div class="history-title">📊 Previous Scores</div>
+            <div class="history-items" id="historyItems">
+                <div style="color: #999;">No games played yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        let score = 0;
+        let streak = 0;
+        let correctAnswer = 0;
+        let gameHistory = [];
+        let selectedTopic = 'all';
+        let availableQuestionTypes = [];
+        let voiceEnabled = true;
+        let speechSynthesis = window.speechSynthesis;
+
+        // Voice function
+        function speak(text) {
+            if (!voiceEnabled || !speechSynthesis) return;
+
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.2;
+            utterance.volume = 1.0;
+
+            // Use a kid-friendly voice if available
+            const voices = speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha')));
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // Load voices
+        if (speechSynthesis) {
+            speechSynthesis.onvoiceschanged = () => {
+                speechSynthesis.getVoices();
+            };
+        }
+
+        // Toggle voice
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('voiceToggle');
+            if (voiceEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.remove('muted');
+                speak('Voice enabled');
+            } else {
+                speechSynthesis.cancel();
+                btn.textContent = '🔇';
+                btn.classList.add('muted');
+            }
+        }
+
+        // Load history from localStorage
+        function loadHistory() {
+            const saved = localStorage.getItem('mathGameHistory');
+            if (saved) {
+                gameHistory = JSON.parse(saved);
+                displayHistory();
+            }
+        }
+
+        // Save history to localStorage
+        function saveHistory() {
+            localStorage.setItem('mathGameHistory', JSON.stringify(gameHistory));
+        }
+
+        // Display history
+        function displayHistory() {
+            const historyDiv = document.getElementById('historyItems');
+            if (gameHistory.length === 0) {
+                historyDiv.innerHTML = '<div style="color: #999;">No games played yet</div>';
+                return;
+            }
+
+            historyDiv.innerHTML = gameHistory.slice(-5).reverse().map((score, index) =>
+                `<div class="history-item">Game ${gameHistory.length - index}: ${score}/10</div>`
+            ).join('');
+        }
+
+        // Question types categorized
+        const questionTypes = {
+            addition: [
+                () => {
+                    const a = Math.floor(Math.random() * 20) + 1;
+                    const b = Math.floor(Math.random() * 20) + 1;
+                    correctAnswer = a + b;
+                    return { text: "Solve this:", math: `${a} + ${b} = ?` };
+                },
+                () => {
+                    const a = Math.floor(Math.random() * 20) + 1;
+                    const b = Math.floor(Math.random() * 20) + 1;
+                    const sum = a + b;
+                    const position = Math.random() > 0.5 ? 'first' : 'second';
+                    if (position === 'first') {
+                        correctAnswer = a;
+                        return { text: "Find the missing number:", math: `? + ${b} = ${sum}` };
+                    } else {
+                        correctAnswer = b;
+                        return { text: "Find the missing number:", math: `${a} + ? = ${sum}` };
+                    }
+                }
+            ],
+            subtraction: [
+                () => {
+                    const a = Math.floor(Math.random() * 30) + 10;
+                    const b = Math.floor(Math.random() * a) + 1;
+                    correctAnswer = a - b;
+                    return { text: "Solve this:", math: `${a} - ${b} = ?` };
+                },
+                () => {
+                    const result = Math.floor(Math.random() * 20) + 1;
+                    const subtract = Math.floor(Math.random() * result) + 1;
+                    const start = result + subtract;
+                    const position = Math.random() > 0.5 ? 'first' : 'result';
+                    if (position === 'first') {
+                        correctAnswer = start;
+                        return { text: "Find the missing number:", math: `? - ${subtract} = ${result}` };
+                    } else {
+                        correctAnswer = result;
+                        return { text: "Find the missing number:", math: `${start} - ${subtract} = ?` };
+                    }
+                }
+            ],
+            multiplication: [
+                () => {
+                    const a = Math.floor(Math.random() * 10) + 2;
+                    const b = Math.floor(Math.random() * 10) + 2;
+                    correctAnswer = a * b;
+                    return { text: "Solve this:", math: `${a} × ${b} = ?` };
+                },
+                () => {
+                    const a = Math.floor(Math.random() * 10) + 2;
+                    const b = Math.floor(Math.random() * 10) + 2;
+                    const product = a * b;
+                    const position = Math.random() > 0.5 ? 'first' : 'second';
+                    if (position === 'first') {
+                        correctAnswer = a;
+                        return { text: "Find the missing number:", math: `? × ${b} = ${product}` };
+                    } else {
+                        correctAnswer = b;
+                        return { text: "Find the missing number:", math: `${a} × ? = ${product}` };
+                    }
+                }
+            ],
+            division: [
+                () => {
+                    const divisor = Math.floor(Math.random() * 9) + 2;
+                    const quotient = Math.floor(Math.random() * 10) + 2;
+                    const dividend = divisor * quotient;
+                    correctAnswer = quotient;
+                    return { text: "Solve this:", math: `${dividend} ÷ ${divisor} = ?` };
+                },
+                () => {
+                    const divisor = Math.floor(Math.random() * 9) + 2;
+                    const quotient = Math.floor(Math.random() * 10) + 2;
+                    const dividend = divisor * quotient;
+                    const position = Math.random() > 0.5 ? 'dividend' : 'quotient';
+                    if (position === 'dividend') {
+                        correctAnswer = dividend;
+                        return { text: "Find the missing number:", math: `? ÷ ${divisor} = ${quotient}` };
+                    } else {
+                        correctAnswer = quotient;
+                        return { text: "Find the missing number:", math: `${dividend} ÷ ${divisor} = ?` };
+                    }
+                }
+            ],
+            shapes: [
+                () => {
+                    const side = Math.floor(Math.random() * 10) + 2;
+                    const area = side * side;
+                    correctAnswer = side;
+                    return { text: "A square has an area of " + area + " square units.", math: "What is the length of one side?" };
+                },
+                () => {
+                    const side = Math.floor(Math.random() * 12) + 2;
+                    correctAnswer = side * side;
+                    return { text: "A square has a side length of " + side + " units.", math: "What is its area?" };
+                },
+                () => {
+                    const length = Math.floor(Math.random() * 12) + 3;
+                    const breadth = Math.floor(Math.random() * 10) + 2;
+                    const area = length * breadth;
+                    correctAnswer = breadth;
+                    return { text: `A rectangle has length ${length} and area ${area}.`, math: "What is its breadth?" };
+                },
+                () => {
+                    const length = Math.floor(Math.random() * 12) + 3;
+                    const breadth = Math.floor(Math.random() * 10) + 2;
+                    const area = length * breadth;
+                    correctAnswer = length;
+                    return { text: `A rectangle has breadth ${breadth} and area ${area}.`, math: "What is its length?" };
+                },
+                () => {
+                    const length = Math.floor(Math.random() * 12) + 3;
+                    const breadth = Math.floor(Math.random() * 10) + 2;
+                    correctAnswer = length * breadth;
+                    return { text: `A rectangle has length ${length} and breadth ${breadth}.`, math: "What is its area?" };
+                },
+                () => {
+                    const length = Math.floor(Math.random() * 10) + 3;
+                    const breadth = Math.floor(Math.random() * 8) + 2;
+                    const perimeter = 2 * (length + breadth);
+                    correctAnswer = breadth;
+                    return { text: `A rectangle has length ${length} and perimeter ${perimeter}.`, math: "What is its breadth?" };
+                },
+                () => {
+                    const side = Math.floor(Math.random() * 12) + 2;
+                    const perimeter = 4 * side;
+                    correctAnswer = side;
+                    return { text: "A square has a perimeter of " + perimeter + " units.", math: "What is the length of one side?" };
+                }
+            ]
+        };
+
+        // Start game with selected topic
+        function startGame(topic) {
+            selectedTopic = topic;
+
+            // Build available question types based on selection
+            if (topic === 'all') {
+                availableQuestionTypes = [
+                    ...questionTypes.addition,
+                    ...questionTypes.subtraction,
+                    ...questionTypes.multiplication,
+                    ...questionTypes.division,
+                    ...questionTypes.shapes
+                ];
+            } else {
+                availableQuestionTypes = questionTypes[topic];
+            }
+
+            // Show game area, hide menu
+            document.getElementById('menuArea').style.display = 'none';
+            document.getElementById('stats').style.display = 'flex';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('exitBtnContainer').style.display = 'block';
+
+            // Update subtitle
+            const topicNames = {
+                'addition': 'Addition Practice ➕',
+                'subtraction': 'Subtraction Practice ➖',
+                'multiplication': 'Multiplication Practice ✖️',
+                'division': 'Division Practice ➗',
+                'shapes': 'Square & Rectangle Practice 🔷',
+                'all': 'Mixed Practice - All Topics 🌟'
+            };
+            document.getElementById('subtitle').textContent = topicNames[topic];
+
+            // Reset and start
+            currentQuestion = 1;
+            score = 0;
+            streak = 0;
+            document.getElementById('questionNum').textContent = '1/10';
+            document.getElementById('score').textContent = '0';
+            document.getElementById('streak').textContent = '0';
+
+            // Welcome message
+            speak(`Great choice! Let's start with ${topicNames[topic]}. Here is your first question!`);
+
+            setTimeout(() => generateQuestion(), 2000);
+        }
+
+        function generateQuestion() {
+            const questionType = availableQuestionTypes[Math.floor(Math.random() * availableQuestionTypes.length)];
+            const question = questionType();
+
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('questionMath').textContent = question.math;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').focus();
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('feedback').style.display = 'none';
+
+            // Read the question aloud
+            const questionToRead = question.text + ' ' + question.math.replace('?', 'blank');
+            speak(questionToRead);
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            const feedbackDiv = document.getElementById('feedback');
+            const submitBtn = document.getElementById('submitBtn');
+            const answerInput = document.getElementById('answerInput');
+
+            if (isNaN(userAnswer)) {
+                alert('Please enter a number!');
+                return;
+            }
+
+            // Disable input and button during feedback
+            submitBtn.disabled = true;
+            answerInput.disabled = true;
+
+            if (userAnswer === correctAnswer) {
+                score++;
+                streak++;
+                feedbackDiv.className = 'feedback correct';
+
+                if (streak >= 3) {
+                    feedbackDiv.textContent = '🔥 Hurray! Amazing streak!';
+                    speak('Hurray! Amazing streak! You are on fire!');
+                } else {
+                    feedbackDiv.textContent = '🎉 Hurray! Correct!';
+                    speak('Hurray! Correct answer!');
+                }
+            } else {
+                streak = 0;
+                feedbackDiv.className = 'feedback wrong';
+                feedbackDiv.textContent = `😢 You missed it! Answer was ${correctAnswer}`;
+                speak(`Oh no, you missed it. The correct answer was ${correctAnswer}. Let's try the next one!`);
+            }
+
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+
+            // Auto-advance to next question after 2 seconds
+            setTimeout(() => {
+                if (currentQuestion < 10) {
+                    nextQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2000);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            document.getElementById('questionNum').textContent = `${currentQuestion}/10`;
+
+            // Re-enable input and button
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('answerInput').disabled = false;
+
+            generateQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('exitBtnContainer').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('finalScore').textContent = `${score}/10`;
+
+            // Save to history
+            gameHistory.push(score);
+            saveHistory();
+            displayHistory();
+
+            // Final message
+            let message = '';
+            if (score === 10) {
+                message = 'Wow! Perfect score! You got all 10 correct! You are a math champion!';
+            } else if (score >= 7) {
+                message = `Great job! You scored ${score} out of 10! Keep practicing!`;
+            } else if (score >= 5) {
+                message = `Good effort! You scored ${score} out of 10. Keep trying!`;
+            } else {
+                message = `You scored ${score} out of 10. Practice makes perfect! Try again!`;
+            }
+
+            setTimeout(() => speak(message), 500);
+        }
+
+        function exitToMenu() {
+            // Confirm before exiting
+            if (confirm('Are you sure you want to change topic? Your current progress will be lost.')) {
+                speechSynthesis.cancel(); // Stop any ongoing speech
+
+                // Go back to menu
+                document.getElementById('gameArea').style.display = 'none';
+                document.getElementById('gameOver').style.display = 'none';
+                document.getElementById('stats').style.display = 'none';
+                document.getElementById('exitBtnContainer').style.display = 'none';
+                document.getElementById('menuArea').style.display = 'block';
+                document.getElementById('subtitle').textContent = 'Solve 10 questions as fast as you can!';
+
+                speak('Okay! Choose a new topic!');
+            }
+        }
+
+        function restartGame() {
+            // Go back to menu
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('exitBtnContainer').style.display = 'none';
+            document.getElementById('menuArea').style.display = 'block';
+            document.getElementById('subtitle').textContent = 'Solve 10 questions as fast as you can!';
+        }
+
+        // Handle Enter key
+        document.getElementById('answerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const submitBtn = document.getElementById('submitBtn');
+                if (!submitBtn.disabled) {
+                    checkAnswer();
+                }
+            }
+        });
+
+        // Initialize game
+        loadHistory();
+    </script>
+</body>
+</html>
