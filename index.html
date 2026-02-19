@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -141,7 +142,6 @@
             transform: none;
         }
 
-
         .btn-restart {
             background: #ff6b6b;
             color: white;
@@ -270,6 +270,30 @@
             margin: 20px 0;
         }
 
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .difficulty-easy {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .difficulty-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .difficulty-hard {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -300,12 +324,33 @@
         </button>
 
         <h1>🧮 Math Puzzle Challenge</h1>
-        <p class="subtitle" id="subtitle">Solve 10 questions as fast as you can!</p>
+        <p class="subtitle" id="subtitle">Choose your difficulty and topic!</p>
 
-        <div id="menuArea">
+        <!-- Difficulty Selection -->
+        <div id="difficultyArea">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="color: #667eea; margin-bottom: 15px;">Choose Difficulty Level</h2>
+                <p style="color: #666; font-size: 0.9em;">Select how hard you want the questions to be!</p>
+            </div>
+
+            <button class="btn" style="background: #4ade80; color: white; margin-bottom: 12px;" onclick="selectDifficulty('easy')">
+                😊 Easy (Numbers 1-50)
+            </button>
+
+            <button class="btn" style="background: #fbbf24; color: white; margin-bottom: 12px;" onclick="selectDifficulty('medium')">
+                🤔 Medium (Numbers 20-100)
+            </button>
+
+            <button class="btn" style="background: #ff6b6b; color: white;" onclick="selectDifficulty('hard')">
+                🔥 Hard (Numbers 50-200)
+            </button>
+        </div>
+
+        <!-- Topic Selection -->
+        <div id="menuArea" style="display: none;">
             <div style="text-align: center; margin-bottom: 30px;">
                 <h2 style="color: #667eea; margin-bottom: 15px;">What do you want to practice today?</h2>
-                <p style="color: #666; font-size: 0.9em;">Choose a topic to start!</p>
+                <p style="color: #666; font-size: 0.9em;" id="difficultyLabel"></p>
             </div>
 
             <button class="btn" style="background: #ff6b6b; color: white; margin-bottom: 12px;" onclick="startGame('addition')">
@@ -325,11 +370,15 @@
             </button>
 
             <button class="btn" style="background: #3b82f6; color: white; margin-bottom: 12px;" onclick="startGame('shapes')">
-                🔷 Square & Rectangle
+                🔷 Shapes (Square, Rectangle, Circle)
             </button>
 
             <button class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;" onclick="startGame('all')">
                 🌟 All Topics (Mixed)
+            </button>
+
+            <button class="exit-btn" style="margin-top: 20px; width: 100%;" onclick="backToDifficulty()">
+                ⬅️ Change Difficulty
             </button>
         </div>
 
@@ -400,40 +449,36 @@
         let correctAnswer = 0;
         let gameHistory = [];
         let selectedTopic = 'all';
+        let selectedDifficulty = 'medium';
         let availableQuestionTypes = [];
         let voiceEnabled = true;
         let speechSynthesis = window.speechSynthesis;
 
+        // Difficulty ranges
+        const difficultyRanges = {
+            easy: { add: [1, 50], sub: [10, 50], mult: [2, 10], div: [2, 10], shape: [2, 15] },
+            medium: { add: [20, 100], sub: [20, 100], mult: [5, 15], div: [3, 12], shape: [5, 20] },
+            hard: { add: [50, 200], sub: [50, 200], mult: [10, 25], div: [5, 20], shape: [10, 30] }
+        };
+
         // Voice function
         function speak(text) {
             if (!voiceEnabled || !speechSynthesis) return;
-
-            // Cancel any ongoing speech
             speechSynthesis.cancel();
-
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.rate = 1.0;
             utterance.pitch = 1.2;
             utterance.volume = 1.0;
-
-            // Use a kid-friendly voice if available
             const voices = speechSynthesis.getVoices();
             const preferredVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha')));
-            if (preferredVoice) {
-                utterance.voice = preferredVoice;
-            }
-
+            if (preferredVoice) utterance.voice = preferredVoice;
             speechSynthesis.speak(utterance);
         }
 
-        // Load voices
         if (speechSynthesis) {
-            speechSynthesis.onvoiceschanged = () => {
-                speechSynthesis.getVoices();
-            };
+            speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
         }
 
-        // Toggle voice
         function toggleVoice() {
             voiceEnabled = !voiceEnabled;
             const btn = document.getElementById('voiceToggle');
@@ -448,7 +493,26 @@
             }
         }
 
-        // Load history from localStorage
+        function selectDifficulty(difficulty) {
+            selectedDifficulty = difficulty;
+            document.getElementById('difficultyArea').style.display = 'none';
+            document.getElementById('menuArea').style.display = 'block';
+
+            const labels = {
+                easy: '😊 Easy Mode - Numbers 1-50',
+                medium: '🤔 Medium Mode - Numbers 20-100',
+                hard: '🔥 Hard Mode - Numbers 50-200'
+            };
+            document.getElementById('difficultyLabel').textContent = labels[difficulty];
+            speak(`Great! You selected ${difficulty} mode. Now choose a topic!`);
+        }
+
+        function backToDifficulty() {
+            document.getElementById('menuArea').style.display = 'none';
+            document.getElementById('difficultyArea').style.display = 'block';
+            speak('Choose your difficulty level');
+        }
+
         function loadHistory() {
             const saved = localStorage.getItem('mathGameHistory');
             if (saved) {
@@ -457,164 +521,193 @@
             }
         }
 
-        // Save history to localStorage
         function saveHistory() {
             localStorage.setItem('mathGameHistory', JSON.stringify(gameHistory));
         }
 
-        // Display history
         function displayHistory() {
             const historyDiv = document.getElementById('historyItems');
             if (gameHistory.length === 0) {
                 historyDiv.innerHTML = '<div style="color: #999;">No games played yet</div>';
                 return;
             }
-
             historyDiv.innerHTML = gameHistory.slice(-5).reverse().map((score, index) =>
                 `<div class="history-item">Game ${gameHistory.length - index}: ${score}/10</div>`
             ).join('');
         }
 
-        // Question types categorized
-        const questionTypes = {
-            addition: [
-                () => {
-                    const a = Math.floor(Math.random() * 20) + 1;
-                    const b = Math.floor(Math.random() * 20) + 1;
-                    correctAnswer = a + b;
-                    return { text: "Solve this:", math: `${a} + ${b} = ?` };
-                },
-                () => {
-                    const a = Math.floor(Math.random() * 20) + 1;
-                    const b = Math.floor(Math.random() * 20) + 1;
-                    const sum = a + b;
-                    const position = Math.random() > 0.5 ? 'first' : 'second';
-                    if (position === 'first') {
-                        correctAnswer = a;
-                        return { text: "Find the missing number:", math: `? + ${b} = ${sum}` };
-                    } else {
-                        correctAnswer = b;
-                        return { text: "Find the missing number:", math: `${a} + ? = ${sum}` };
-                    }
-                }
-            ],
-            subtraction: [
-                () => {
-                    const a = Math.floor(Math.random() * 30) + 10;
-                    const b = Math.floor(Math.random() * a) + 1;
-                    correctAnswer = a - b;
-                    return { text: "Solve this:", math: `${a} - ${b} = ?` };
-                },
-                () => {
-                    const result = Math.floor(Math.random() * 20) + 1;
-                    const subtract = Math.floor(Math.random() * result) + 1;
-                    const start = result + subtract;
-                    const position = Math.random() > 0.5 ? 'first' : 'result';
-                    if (position === 'first') {
-                        correctAnswer = start;
-                        return { text: "Find the missing number:", math: `? - ${subtract} = ${result}` };
-                    } else {
-                        correctAnswer = result;
-                        return { text: "Find the missing number:", math: `${start} - ${subtract} = ?` };
-                    }
-                }
-            ],
-            multiplication: [
-                () => {
-                    const a = Math.floor(Math.random() * 10) + 2;
-                    const b = Math.floor(Math.random() * 10) + 2;
-                    correctAnswer = a * b;
-                    return { text: "Solve this:", math: `${a} × ${b} = ?` };
-                },
-                () => {
-                    const a = Math.floor(Math.random() * 10) + 2;
-                    const b = Math.floor(Math.random() * 10) + 2;
-                    const product = a * b;
-                    const position = Math.random() > 0.5 ? 'first' : 'second';
-                    if (position === 'first') {
-                        correctAnswer = a;
-                        return { text: "Find the missing number:", math: `? × ${b} = ${product}` };
-                    } else {
-                        correctAnswer = b;
-                        return { text: "Find the missing number:", math: `${a} × ? = ${product}` };
-                    }
-                }
-            ],
-            division: [
-                () => {
-                    const divisor = Math.floor(Math.random() * 9) + 2;
-                    const quotient = Math.floor(Math.random() * 10) + 2;
-                    const dividend = divisor * quotient;
-                    correctAnswer = quotient;
-                    return { text: "Solve this:", math: `${dividend} ÷ ${divisor} = ?` };
-                },
-                () => {
-                    const divisor = Math.floor(Math.random() * 9) + 2;
-                    const quotient = Math.floor(Math.random() * 10) + 2;
-                    const dividend = divisor * quotient;
-                    const position = Math.random() > 0.5 ? 'dividend' : 'quotient';
-                    if (position === 'dividend') {
-                        correctAnswer = dividend;
-                        return { text: "Find the missing number:", math: `? ÷ ${divisor} = ${quotient}` };
-                    } else {
-                        correctAnswer = quotient;
-                        return { text: "Find the missing number:", math: `${dividend} ÷ ${divisor} = ?` };
-                    }
-                }
-            ],
-            shapes: [
-                () => {
-                    const side = Math.floor(Math.random() * 10) + 2;
-                    const area = side * side;
-                    correctAnswer = side;
-                    return { text: "A square has an area of " + area + " square units.", math: "What is the length of one side?" };
-                },
-                () => {
-                    const side = Math.floor(Math.random() * 12) + 2;
-                    correctAnswer = side * side;
-                    return { text: "A square has a side length of " + side + " units.", math: "What is its area?" };
-                },
-                () => {
-                    const length = Math.floor(Math.random() * 12) + 3;
-                    const breadth = Math.floor(Math.random() * 10) + 2;
-                    const area = length * breadth;
-                    correctAnswer = breadth;
-                    return { text: `A rectangle has length ${length} and area ${area}.`, math: "What is its breadth?" };
-                },
-                () => {
-                    const length = Math.floor(Math.random() * 12) + 3;
-                    const breadth = Math.floor(Math.random() * 10) + 2;
-                    const area = length * breadth;
-                    correctAnswer = length;
-                    return { text: `A rectangle has breadth ${breadth} and area ${area}.`, math: "What is its length?" };
-                },
-                () => {
-                    const length = Math.floor(Math.random() * 12) + 3;
-                    const breadth = Math.floor(Math.random() * 10) + 2;
-                    correctAnswer = length * breadth;
-                    return { text: `A rectangle has length ${length} and breadth ${breadth}.`, math: "What is its area?" };
-                },
-                () => {
-                    const length = Math.floor(Math.random() * 10) + 3;
-                    const breadth = Math.floor(Math.random() * 8) + 2;
-                    const perimeter = 2 * (length + breadth);
-                    correctAnswer = breadth;
-                    return { text: `A rectangle has length ${length} and perimeter ${perimeter}.`, math: "What is its breadth?" };
-                },
-                () => {
-                    const side = Math.floor(Math.random() * 12) + 2;
-                    const perimeter = 4 * side;
-                    correctAnswer = side;
-                    return { text: "A square has a perimeter of " + perimeter + " units.", math: "What is the length of one side?" };
-                }
-            ]
-        };
+        // Get difficulty-adjusted question generators
+        function getQuestionTypes() {
+            const range = difficultyRanges[selectedDifficulty];
 
-        // Start game with selected topic
+            return {
+                addition: [
+                    () => {
+                        const a = Math.floor(Math.random() * (range.add[1] - range.add[0])) + range.add[0];
+                        const b = Math.floor(Math.random() * (range.add[1] - range.add[0])) + range.add[0];
+                        correctAnswer = a + b;
+                        return { text: "Solve this:", math: `${a} + ${b} = ?` };
+                    },
+                    () => {
+                        const a = Math.floor(Math.random() * (range.add[1] - range.add[0])) + range.add[0];
+                        const b = Math.floor(Math.random() * (range.add[1] - range.add[0])) + range.add[0];
+                        const sum = a + b;
+                        const position = Math.random() > 0.5 ? 'first' : 'second';
+                        if (position === 'first') {
+                            correctAnswer = a;
+                            return { text: "Find the missing number:", math: `? + ${b} = ${sum}` };
+                        } else {
+                            correctAnswer = b;
+                            return { text: "Find the missing number:", math: `${a} + ? = ${sum}` };
+                        }
+                    }
+                ],
+                subtraction: [
+                    () => {
+                        const a = Math.floor(Math.random() * (range.sub[1] - range.sub[0])) + range.sub[0];
+                        const b = Math.floor(Math.random() * a) + 1;
+                        correctAnswer = a - b;
+                        return { text: "Solve this:", math: `${a} - ${b} = ?` };
+                    },
+                    () => {
+                        const result = Math.floor(Math.random() * (range.sub[1] - range.sub[0])) + range.sub[0];
+                        const subtract = Math.floor(Math.random() * result) + 1;
+                        const start = result + subtract;
+                        const position = Math.random() > 0.5 ? 'first' : 'result';
+                        if (position === 'first') {
+                            correctAnswer = start;
+                            return { text: "Find the missing number:", math: `? - ${subtract} = ${result}` };
+                        } else {
+                            correctAnswer = result;
+                            return { text: "Find the missing number:", math: `${start} - ${subtract} = ?` };
+                        }
+                    }
+                ],
+                multiplication: [
+                    () => {
+                        const a = Math.floor(Math.random() * (range.mult[1] - range.mult[0])) + range.mult[0];
+                        const b = Math.floor(Math.random() * (range.mult[1] - range.mult[0])) + range.mult[0];
+                        correctAnswer = a * b;
+                        return { text: "Solve this:", math: `${a} × ${b} = ?` };
+                    },
+                    () => {
+                        const a = Math.floor(Math.random() * (range.mult[1] - range.mult[0])) + range.mult[0];
+                        const b = Math.floor(Math.random() * (range.mult[1] - range.mult[0])) + range.mult[0];
+                        const product = a * b;
+                        const position = Math.random() > 0.5 ? 'first' : 'second';
+                        if (position === 'first') {
+                            correctAnswer = a;
+                            return { text: "Find the missing number:", math: `? × ${b} = ${product}` };
+                        } else {
+                            correctAnswer = b;
+                            return { text: "Find the missing number:", math: `${a} × ? = ${product}` };
+                        }
+                    }
+                ],
+                division: [
+                    () => {
+                        const divisor = Math.floor(Math.random() * (range.div[1] - range.div[0])) + range.div[0];
+                        const quotient = Math.floor(Math.random() * (range.div[1] - range.div[0])) + range.div[0];
+                        const dividend = divisor * quotient;
+                        correctAnswer = quotient;
+                        return { text: "Solve this:", math: `${dividend} ÷ ${divisor} = ?` };
+                    },
+                    () => {
+                        const divisor = Math.floor(Math.random() * (range.div[1] - range.div[0])) + range.div[0];
+                        const quotient = Math.floor(Math.random() * (range.div[1] - range.div[0])) + range.div[0];
+                        const dividend = divisor * quotient;
+                        const position = Math.random() > 0.5 ? 'dividend' : 'quotient';
+                        if (position === 'dividend') {
+                            correctAnswer = dividend;
+                            return { text: "Find the missing number:", math: `? ÷ ${divisor} = ${quotient}` };
+                        } else {
+                            correctAnswer = quotient;
+                            return { text: "Find the missing number:", math: `${dividend} ÷ ${divisor} = ?` };
+                        }
+                    }
+                ],
+                shapes: [
+                    () => {
+                        const side = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const area = side * side;
+                        correctAnswer = side;
+                        return { text: "A square has an area of " + area + " square units.", math: "What is the length of one side?" };
+                    },
+                    () => {
+                        const side = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        correctAnswer = side * side;
+                        return { text: "A square has a side length of " + side + " units.", math: "What is its area?" };
+                    },
+                    () => {
+                        const length = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const breadth = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const area = length * breadth;
+                        correctAnswer = breadth;
+                        return { text: `A rectangle has length ${length} and area ${area}.`, math: "What is its breadth?" };
+                    },
+                    () => {
+                        const length = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const breadth = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const area = length * breadth;
+                        correctAnswer = length;
+                        return { text: `A rectangle has breadth ${breadth} and area ${area}.`, math: "What is its length?" };
+                    },
+                    () => {
+                        const length = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const breadth = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        correctAnswer = length * breadth;
+                        return { text: `A rectangle has length ${length} and breadth ${breadth}.`, math: "What is its area?" };
+                    },
+                    () => {
+                        const length = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const breadth = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const perimeter = 2 * (length + breadth);
+                        correctAnswer = breadth;
+                        return { text: `A rectangle has length ${length} and perimeter ${perimeter}.`, math: "What is its breadth?" };
+                    },
+                    () => {
+                        const side = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const perimeter = 4 * side;
+                        correctAnswer = side;
+                        return { text: "A square has a perimeter of " + perimeter + " units.", math: "What is the length of one side?" };
+                    },
+                    // Circle questions - Area and Circumference
+                    () => {
+                        const radius = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const area = Math.round(3.14 * radius * radius);
+                        correctAnswer = radius;
+                        return { text: `A circle has an area of ${area} square units. (Use π = 3.14)`, math: "What is the radius?" };
+                    },
+                    () => {
+                        const radius = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        correctAnswer = Math.round(3.14 * radius * radius);
+                        return { text: `A circle has a radius of ${radius} units. (Use π = 3.14)`, math: "What is its area? (Round to nearest whole number)" };
+                    },
+                    () => {
+                        const radius = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const circumference = Math.round(2 * 3.14 * radius);
+                        correctAnswer = radius;
+                        return { text: `A circle has a circumference of ${circumference} units. (Use π = 3.14)`, math: "What is the radius?" };
+                    },
+                    () => {
+                        const radius = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        correctAnswer = Math.round(2 * 3.14 * radius);
+                        return { text: `A circle has a radius of ${radius} units. (Use π = 3.14)`, math: "What is its circumference? (Round to nearest whole number)" };
+                    },
+                    () => {
+                        const diameter = Math.floor(Math.random() * (range.shape[1] - range.shape[0])) + range.shape[0];
+                        const circumference = Math.round(3.14 * diameter);
+                        correctAnswer = diameter;
+                        return { text: `A circle has a circumference of ${circumference} units. (Use π = 3.14)`, math: "What is the diameter?" };
+                    }
+                ]
+            };
+        }
+
         function startGame(topic) {
             selectedTopic = topic;
+            const questionTypes = getQuestionTypes();
 
-            // Build available question types based on selection
             if (topic === 'all') {
                 availableQuestionTypes = [
                     ...questionTypes.addition,
@@ -627,24 +720,23 @@
                 availableQuestionTypes = questionTypes[topic];
             }
 
-            // Show game area, hide menu
             document.getElementById('menuArea').style.display = 'none';
             document.getElementById('stats').style.display = 'flex';
             document.getElementById('gameArea').style.display = 'block';
             document.getElementById('exitBtnContainer').style.display = 'block';
 
-            // Update subtitle
             const topicNames = {
                 'addition': 'Addition Practice ➕',
                 'subtraction': 'Subtraction Practice ➖',
                 'multiplication': 'Multiplication Practice ✖️',
                 'division': 'Division Practice ➗',
-                'shapes': 'Square & Rectangle Practice 🔷',
+                'shapes': 'Shapes Practice (Square, Rectangle, Circle) 🔷',
                 'all': 'Mixed Practice - All Topics 🌟'
             };
-            document.getElementById('subtitle').textContent = topicNames[topic];
 
-            // Reset and start
+            const difficultyEmojis = { easy: '😊', medium: '🤔', hard: '🔥' };
+            document.getElementById('subtitle').textContent = topicNames[topic] + ' ' + difficultyEmojis[selectedDifficulty];
+
             currentQuestion = 1;
             score = 0;
             streak = 0;
@@ -652,8 +744,7 @@
             document.getElementById('score').textContent = '0';
             document.getElementById('streak').textContent = '0';
 
-            // Welcome message
-            speak(`Great choice! Let's start with ${topicNames[topic]}. Here is your first question!`);
+            speak(`Great choice! Let's start with ${topicNames[topic]} in ${selectedDifficulty} mode. Here is your first question!`);
 
             setTimeout(() => generateQuestion(), 2000);
         }
@@ -669,7 +760,6 @@
             document.getElementById('feedback').className = 'feedback';
             document.getElementById('feedback').style.display = 'none';
 
-            // Read the question aloud
             const questionToRead = question.text + ' ' + question.math.replace('?', 'blank');
             speak(questionToRead);
         }
@@ -685,7 +775,6 @@
                 return;
             }
 
-            // Disable input and button during feedback
             submitBtn.disabled = true;
             answerInput.disabled = true;
 
@@ -711,7 +800,6 @@
             document.getElementById('score').textContent = score;
             document.getElementById('streak').textContent = streak;
 
-            // Auto-advance to next question after 2 seconds
             setTimeout(() => {
                 if (currentQuestion < 10) {
                     nextQuestion();
@@ -724,11 +812,8 @@
         function nextQuestion() {
             currentQuestion++;
             document.getElementById('questionNum').textContent = `${currentQuestion}/10`;
-
-            // Re-enable input and button
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('answerInput').disabled = false;
-
             generateQuestion();
         }
 
@@ -738,12 +823,10 @@
             document.getElementById('gameOver').style.display = 'block';
             document.getElementById('finalScore').textContent = `${score}/10`;
 
-            // Save to history
             gameHistory.push(score);
             saveHistory();
             displayHistory();
 
-            // Final message
             let message = '';
             if (score === 10) {
                 message = 'Wow! Perfect score! You got all 10 correct! You are a math champion!';
@@ -759,33 +842,27 @@
         }
 
         function exitToMenu() {
-            // Confirm before exiting
             if (confirm('Are you sure you want to change topic? Your current progress will be lost.')) {
-                speechSynthesis.cancel(); // Stop any ongoing speech
-
-                // Go back to menu
+                speechSynthesis.cancel();
                 document.getElementById('gameArea').style.display = 'none';
                 document.getElementById('gameOver').style.display = 'none';
                 document.getElementById('stats').style.display = 'none';
                 document.getElementById('exitBtnContainer').style.display = 'none';
                 document.getElementById('menuArea').style.display = 'block';
-                document.getElementById('subtitle').textContent = 'Solve 10 questions as fast as you can!';
-
+                document.getElementById('subtitle').textContent = 'Choose your difficulty and topic!';
                 speak('Okay! Choose a new topic!');
             }
         }
 
         function restartGame() {
-            // Go back to menu
             document.getElementById('gameArea').style.display = 'none';
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('stats').style.display = 'none';
             document.getElementById('exitBtnContainer').style.display = 'none';
             document.getElementById('menuArea').style.display = 'block';
-            document.getElementById('subtitle').textContent = 'Solve 10 questions as fast as you can!';
+            document.getElementById('subtitle').textContent = 'Choose your difficulty and topic!';
         }
 
-        // Handle Enter key
         document.getElementById('answerInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const submitBtn = document.getElementById('submitBtn');
@@ -795,8 +872,8 @@
             }
         });
 
-        // Initialize game
         loadHistory();
+        speak('Welcome to Math Puzzle Challenge! Choose your difficulty level to start!');
     </script>
 </body>
 </html>
